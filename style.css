@@ -1,0 +1,103 @@
+/* Ընդհանուր ոճեր */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+/* Header */
+header {
+  background-color: #0077cc;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+ Լոգո + վերնագիր միավոր */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* տարածություն լոգոյի և վերնագրի միջև */
+}
+
+/* Լոգո չափ */
+.logo {
+  width: 60px;
+  height: auto;
+}
+
+
+/* Նավիգացիոն մենյու */
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+/* Hover էֆեկտ */
+nav ul li a:hover {
+  color: #ffcc00;
+}
+
+/* Հիմնական բովանդակություն */
+main {
+  padding: 40px;
+  text-align: center;
+}
+
+/* Footer */
+footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: 50px;
+  font-size: 14px;
+}
+.news-container {
+  display: flex;
+  flex-wrap: wrap;      /* Թույլ տալիս է տարրերին անցնել հաջորդ տող */
+  gap: 20px;            /* Տարրերի միջև տարածություն */
+  justify-content: center;
+}
+
+/* Desktop - համակարգչի համար՝ 2 հատ մեկ տողում */
+.news-item {
+  width: calc(50% - 20px);  /* 2 նորություն կողք կողքի (gap-ով) */
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 15px;
+  text-align: center;
+}
+
+/* Նկարները նորություններում */
+.news-item img.news-img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* Responsive - փոքր էկրանների համար */
+@media (max-width: 600px) {
+  .news-container {
+    flex-direction: column;   /* ուղղահայաց դասավորում */
+    align-items: center;
+  }
+
+  .news-item {
+    width: 90%;               /* փոքր էկրանին լրիվ լայնություն */
+  }
+}
+
