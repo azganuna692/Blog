@@ -8,10 +8,17 @@ body {
 
 /* Header */
 header {
+    background: radial-gradient(#0256e7);
   background-color: #0077cc;
   color: white;
   padding: 20px 0;
   text-align: center;
+}
+.circle {width: 200px;
+height: 200px;
+ border-radius: 50%;
+background: radial-gradient(#0077cc);
+margin: 50px;
 }
  Լոգո + վերնագիր միավոր */
 .header-left {
@@ -83,7 +90,7 @@ footer {
 
 /* Նկարները նորություններում */
 .news-item img.news-img {
-  width: 100%;
+  width: 50%;
   height: auto;
   border-radius: 8px;
   margin-bottom: 10px;
