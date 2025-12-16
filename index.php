@@ -1,3 +1,63 @@
+
+config php 
+<?php
+$host = "localhost";
+$dbname = "forum_db";
+$user = "root";
+$pass = "";
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
+?>
+
+add comment php
+<?php
+session_start();
+include 'db.php';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $question_id = $_POST['question_id'];
+    $comment = htmlspecialchars(trim($_POST['comment']));
+
+    $stmt = $conn->prepare("INSERT INTO comments (question_id, user_id, comment) VALUES (?, ?, ?)");
+    $stmt->bind_param("iis", $question_id, $user_id, $comment);
+    $stmt->execute();
+}
+
+header("Location: question.php?id=" . $_POST['question_id']);
+exit;
+
+
+
+db. php
+<?php
+$host = 'localhost';
+$db   = 'forum_db';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    echo 'Connection failed: ' . $e->getMessage();
+    exit;
+}
+?>
+
+
+
 login.php
 <?php
 require 'config.php';
