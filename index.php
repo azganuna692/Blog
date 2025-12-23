@@ -2724,3 +2724,882 @@ $successMessage = isset($_GET['success']) ? $_GET['success'] : null;
     </script>
 </body>
 </html>
+
+
+
+
+
+register
+<?php
+require 'config.php';
+require 'classes/User.php';
+
+session_start();
+$user = new User($pdo);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    
+    $avatarName = '';
+    if ($_FILES['avatar']['name']) {
+        $avatarName = time() . '_' . $_FILES['avatar']['name'];
+        move_uploaded_file($_FILES['avatar']['tmp_name'], 'uploads/' . $avatarName);
+    }
+
+    if ($user->register($name, $email, $password, $avatarName)) {
+        header('Location: login.php');
+        exit;
+    } else {
+        $error = "Գրանցումը ձախողվեց։ Email-ը հնարավոր է արդեն օգտագործվում է։";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Գրանցում</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --error-color: #ef476f;
+            --success-color: #06d6a0;
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --input-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background-color: var(--input-bg);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+        
+        .file-input-container {
+            position: relative;
+            margin-bottom: 1.2rem;
+            text-align: center;
+        }
+        
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem;
+            background-color: #f1f3f9;
+            border: 2px dashed #d1d9e6;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input-label:hover {
+            background-color: #e9ecef;
+        }
+        
+        .file-input-label i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            color: var(--error-color);
+            background-color: rgba(239, 71, 111, 0.1);
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .error-message i {
+            margin-right: 0.5rem;
+        }
+        
+        .login-link {
+            display: block;
+            margin-top: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        
+        .login-link:hover {
+            color: var(--secondary-color);
+        }
+        
+        @media (max-width: 576px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Գրանցում</h2>
+        
+        <?php if (isset($error)): ?>
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <?php echo $error; ?>
+        </div>
+        <?php endif; ?>
+        
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">Անուն</label>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Ձեր անունը" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Էլ․ հասցե</label>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="example@mail.com" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Գաղտնաբառ</label>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Գաղտնաբառ" required>
+                </div>
+            </div>
+            
+            <div class="file-input-container">
+                <label class="file-input-label" for="avatar">
+                    <i class="fas fa-image"></i>
+                    <span>Ընտրել նկար</span>
+                </label>
+                <input type="file" id="avatar" name="avatar" class="file-input" accept="image/*">
+                <div class="file-name" id="file-name">Ոչ մի ֆայլ ընտրված չէ</div>
+            </div>
+            
+            <button type="submit" class="btn">Գրանցվել</button>
+        </form>
+        
+        <a href="login.php" class="login-link">Արդեն գրանցվա՞ծ ես։ Մուտք գործել</a>
+    </div>
+    
+    <script>
+        document.getElementById('avatar').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'Ոչ մի ֆայլ ընտրված չէ';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>
+
+
+
+profil
+
+
+<?php
+require 'config.php';
+require 'classes/User.php';
+
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$userObj = new User($pdo);
+$user = $userObj->getById($_SESSION['user_id']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $avatar = $user['avatar'];
+    
+    if (!empty($_FILES['avatar']['name'])) {
+        $avatar = time() . '_' . $_FILES['avatar']['name'];
+        move_uploaded_file($_FILES['avatar']['tmp_name'], 'uploads/' . $avatar);
+    }
+    
+    if (!empty($_POST['password'])) {
+        if ($_POST['password'] !== $_POST['password_confirm']) {
+            $error = "Գաղտնաբառերը չեն համընկնում։";
+        } else {
+            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, avatar = ?, password = ? WHERE id = ?");
+            $success = $stmt->execute([$name, $email, $avatar, $password, $_SESSION['user_id']]);
+        }
+    } else {
+        $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, avatar = ? WHERE id = ?");
+        $success = $stmt->execute([$name, $email, $avatar, $_SESSION['user_id']]);
+    }
+    
+    if (isset($success) && $success) {
+        $user = $userObj->getById($_SESSION['user_id']); 
+        $message = "Տվյալները հաջողությամբ թարմացվեցին։";
+    } elseif (!isset($error)) {
+        $error = "Email-ը հնարավոր է արդեն օգտագործվում է։";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Իմ Պրոֆիլը</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --danger-color: #e63946;
+            --success-color: #2a9d8f;
+            --warning-color: #f4a261;
+            --gray-color: #adb5bd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Noto Sans Armenian', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark-color);
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 550px;
+            animation: fadeIn 0.8s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 28px;
+            position: relative;
+            display: inline-block;
+            text-align: center;
+            width: 100%;
+        }
+        
+        h2:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+        
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+            text-align: center;
+            animation: slideDown 0.5s ease-out;
+        }
+        
+        .message-success {
+            background-color: rgba(42, 157, 143, 0.15);
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .message-error {
+            background-color: rgba(230, 57, 70, 0.15);
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .avatar-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        .avatar-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            color: var(--gray-color);
+            margin: 0 auto;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            position: relative;
+        }
+        
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-color);
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--gray-color);
+            font-size: 12px;
+            padding-left: 15px;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Noto Sans Armenian', sans-serif;
+            color: var(--dark-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            height: 50px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            border: 1px dashed #dee2e6;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin: 0 0 20px;
+        }
+        
+        .file-upload:hover {
+            background-color: #e9ecef;
+            border-color: var(--primary-color);
+        }
+        
+        .file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: inline-flex;
+            align-items: center;
+            color: var(--gray-color);
+            font-size: 14px;
+            text-align: center; 
+        }
+        
+        .file-upload-label i {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .file-name {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-left: 5px;
+        }
+        
+        button {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans Armenian', sans-serif;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(-1px);
+        }
+        
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .link:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        
+        .link i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .link-logout {
+            color: var(--danger-color);
+        }
+        
+        .link-logout i {
+            color: var(--danger-color);
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-5px);
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .section-divider {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            color: var(--gray-color);
+        }
+        
+        .section-divider:before,
+        .section-divider:after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: #dee2e6;
+        }
+        
+        .section-divider span {
+            padding: 0 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+            
+            .avatar, .avatar-placeholder {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard.php" class="back-link">
+            <i class="fas fa-arrow-left"></i> Վերադառնալ վահանակ
+        </a>
+        
+        <h2>Իմ Պրոֆիլը</h2>
+        
+        <?php if (isset($message)): ?>
+            <div class="message message-success">
+                <i class="fas fa-check-circle"></i> <?= $message ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($error)): ?>
+            <div class="message message-error">
+                <i class="fas fa-exclamation-circle"></i> <?= $error ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="avatar-container">
+            <?php if ($user['avatar']): ?>
+                <img src="uploads/<?= htmlspecialchars($user['avatar']) ?>" alt="Avatar" class="avatar">
+            <?php else: ?>
+                <div class="avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" placeholder="Անուն" required>
+            </div>
+            
+            <div class="form-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" placeholder="Էլ. հասցե" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="avatar-upload" class="file-upload">
+                    <input type="file" name="avatar" id="avatar-upload" accept="image/*">
+                    <span class="file-upload-label">
+                        <div class="fas fa-cloud-upload-alt"></div> 
+                        <p style="margin: 3px;">Ընտրել նկար</p>
+                        <span class="file-name"></span>
+                    </span>
+                </label>
+            </div>
+            
+            <div class="section-divider">
+                <span>Գաղտնաբառի թարմացում</span>
+            </div>
+            
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Նոր գաղտնաբառ">
+                <small>Թողեք դատարկ, եթե չեք ցանկանում փոխել գաղտնաբառը</small>
+            </div>
+            
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password_confirm" placeholder="Հաստատեք նոր գաղտնաբառը">
+            </div>
+            
+            <button type="submit">
+                <i class="fas fa-save"></i> Թարմացնել
+            </button>
+        </form>
+
+        <div class="links-container">
+            <a href="add_question.php" class="link">
+                <i class="fas fa-plus-circle"></i> Ավելացնել հարց
+            </a>
+            <a href="questions.php" class="link">
+                <i class="fas fa-book"></i> Բոլոր հարցերը
+            </a>
+            <a href="logout.php" class="link link-logout">
+                <i class="fas fa-sign-out-alt"></i> Ելք
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('avatar-upload');
+            const fileName = document.querySelector('.file-name');
+            const form = document.querySelector('form');
+            const passwordInput = document.querySelector('input[name="password"]');
+            const confirmInput = document.querySelector('input[name="password_confirm"]');
+            
+            form.addEventListener('submit', function(e) {
+                if (passwordInput.value && passwordInput.value !== confirmInput.value) {
+                    e.preventDefault();
+                    alert('Գաղտնաբառերը չեն համընկնում։');
+                    confirmInput.focus();
+                }
+            });
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileName.textContent = this.files[0].name;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const avatarContainer = document.querySelector('.avatar-container');
+                    
+                        avatarContainer.innerHTML = '';
+                    
+                        const newAvatar = document.createElement('img');
+                        newAvatar.src = e.target.result;
+                        newAvatar.className = 'avatar';
+                        newAvatar.style.opacity = '0';
+                        avatarContainer.appendChild(newAvatar);
+                        
+                        setTimeout(() => {
+                            newAvatar.style.opacity = '1';
+                        }, 50);
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+            
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach((group, index) => {
+                group.style.opacity = '0';
+                group.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    group.style.opacity = '1';
+                    group.style.transform = 'translateY(0)';
+                }, 200 + (index * 100));
+            });
+            
+            const button = document.querySelector('button');
+            button.style.opacity = '0';
+            button.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                button.style.opacity = '1';
+                button.style.transform = 'translateY(0)';
+            }, 500);
+            
+            const links = document.querySelectorAll('.link');
+            links.forEach((link, index) => {
+                link.style.opacity = '0';
+                link.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    link.style.opacity = '1';
+                    link.style.transform = 'translateX(0)';
+                }, 600 + (index * 100));
+            });
+        });
+    </script>
+</body>
+</html>
